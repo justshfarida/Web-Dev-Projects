@@ -1,0 +1,96 @@
+#hero {
+    background-image: url("./assets/images/hero.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.montserrat {
+    font-family: 'Montserrat', sans-serif;
+}
+
+.roboto-mono {
+    font-family: 'Roboto Mono', monospace;
+}
+
+body {
+    background-color: #F7F9F2;
+}
+
+#about-me-back {
+    background-image: url("./assets/images/webwall.png");
+    background-size: cover;
+    background-repeat: no-repeat;
+    height: 70vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    column-gap: 150px;
+    padding: 20px; /* Add padding to create space */
+
+}
+
+#farida-img {
+    border-radius: 50%;
+    width:100%;
+    max-width: 300px;
+    flex: 1 1 auto;
+     /* Flex shorthand for grow, shrink, basis */
+}
+
+#about-me-text {
+    flex: 0 1 400px;
+}
+#cat-img
+{
+    width: 100%;
+    max-width: 150px;
+
+}
+@media (max-width:847px) {
+    #about-me-back
+    {
+        margin-top: 5vh;
+        height:auto;
+    }
+    #about-me-text
+    {
+        text-align: center;
+        margin-top: 20px; /* Add margin to separate elements */
+    }
+}
+#my-projects {
+    margin-top: 50px; 
+    margin-bottom: 50px;/* Add margin to create space from the previous section */
+}
+#my-projects-box
+{
+    display: flex;
+    flex-wrap:wrap;
+    justify-content: space-evenly;
+    height: auto; /* Adjust height to auto to avoid fixed height issues */  
+    align-items: end;
+}
+#first-project, #second-project
+{
+    flex:0 1 400px;
+}
+#car-img, #list-img
+{
+    max-width:300px;
+    width:100%;
+
+}
+hr{
+    margin:0;
+}
+.btn{
+    background-color: #CB6CE6 !important;
+    margin-top: 2rem;
+    margin-bottom: 3rem;
+    border-radius: 40%;
+    padding: 1.5rem 3rem; /* Increase padding for a larger button */
+    font-size:1.5rem;
+    
+}

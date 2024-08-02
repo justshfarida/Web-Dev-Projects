@@ -1,0 +1,23 @@
+.class-title
+{
+    font-weight:normal;
+}
+#green{
+    color:green
+}
+#red{
+    color:red
+}
+#yellow{
+    color:yellow
+}
+#blue{
+    color:blue
+}
+#orange{
+    color:orange
+}
+img{
+    height: 200px;
+    width:200px;
+}
