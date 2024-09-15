@@ -76,6 +76,6 @@ function startOver()
   level=0;
   gameStart=false;
   gamePattern=[];
-  $("h1").text("Game Over! Press any key to restart! ");
+  $("h1").text("Game Over! Press any key to restart!  ");
 
 }
