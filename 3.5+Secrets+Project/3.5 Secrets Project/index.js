@@ -12,6 +12,7 @@ const password = "ILoveProgramming";
     
 var IsAuthorised=false;
 app.use(bodyParser.urlencoded({ extended: true }));
+//app.use(express.urlencoded({ extended: true })); Same as above when you don't want to install bodyParser
 
 function checkPassword(req, res, next) {
     if(req.body.password === password){
