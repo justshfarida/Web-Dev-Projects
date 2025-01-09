@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Name Letters</title>
+</head>
+
+<body>
+  <!-- Write your code here -->
+   <%if(locals.fullNameLength){%>
+    <h1 >There are <%=fullNameLength%> letters in your name</h1>
+   <%}else{%>
+    <h1>Enter your name below 👇</h1>  // Display this message when the user has not entered a name.  // When the user has entered a name, display the number of letters in their name.  // You can use the JavaScript function `fullNameLength` to calculate the length of the full name.  // You can use the `fName` and `lName` variables to access the first and last name entered by the user.  // The form should be submitted to the "/submit" route using the POST method.  // You can use the `submit` event to handle the form submission and display the result.  // You can use the `res.send` function to send the result back to the client.  // You can use the `res.render` function to render the "index.ejs" template with the calculated length and the full name.  // Make sure to handle any potential errors that may occur during the
+   <%}%>
+  <form action="/submit" method="POST">
+    <input type="text" name="fName" placeholder="First name">
+    <input type="text" name="lName" placeholder="Last name">
+    <input type="submit" value="OK">
+  </form>
+</body>
+
+</html>
