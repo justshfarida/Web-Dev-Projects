@@ -14,22 +14,22 @@
     <button type="submit" value="beef" name="choice">🥩</button>
     <button type="submit" value="fish" name="choice">🐟</button>
   </form>
+
   <div id="recipeContainer" class="hidden">
-
     <!-- If no recipe yet, show: -->
-    <h2>Pick your favourite taco ingredient 👆</h2>
-    <!-- Else, show the recipe name e.g. <h2>Recipe name</h2>-->
-
-    <h3>Ingredients:</h3>
-    <ul id="ingredientsList">
-      <li>Protein name, protein preparation</li>
-      <li>Salsa name</li>
-      <li>Every other topping</li>
-    </ul>
-
-
-
+    <% if (!locals.choiceName || !locals.choiceIngredients) { %>
+      <h2>Pick your favourite taco ingredient 👆</h2>
+    <% } else { %>
+      <h2><%= choiceName %></h2>
+      <h3>Ingredients:</h3>
+      <ul id="ingredientsList">
+        <% choiceIngredients.forEach((ingredient) => { %>
+          <li><%= ingredient %></li>
+        <% }); %>
+      </ul>
+    <% } %>
   </div>
+
 </body>
 
 </html>
