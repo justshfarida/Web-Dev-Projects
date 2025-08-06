@@ -6,31 +6,32 @@
   <title>Store Locator</title>
   <link rel="stylesheet" href="/styles/main.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
-  <link
-  rel="stylesheet"
-  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-/>
-<script
-  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
-</script>
-
+  
+  <!-- Leaflet CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
+
 <body>
   <div class="main-container">
-    <!-- Left: Form -->
+    <!-- LEFT SIDE: Form -->
     <div class="form-section">
       <h1>Store Locator</h1>
 
       <form action="/" method="POST">
+        <!-- Location input -->
         <label for="location">Enter a city or address:</label>
-        <input type="text" id="location" name="location" required />
-        
+        <input type="text" id="location" name="location" list="suggestions" required />
+        <datalist id="suggestions"></datalist>
 
+        <!-- Button to use geolocation -->
         <button type="button" id="useLocationBtn">📍 Use My Current Location</button>
+
+        <!-- Hidden lat/lon inputs to send to server -->
         <input type="hidden" id="lat" name="lat">
         <input type="hidden" id="lon" name="lon">
 
-
+        <!-- Category select -->
         <label for="category">Select a category:</label>
         <select name="category" id="category">
           <option value="commercial.supermarket">Supermarket</option>
@@ -41,9 +42,10 @@
 
         <button type="submit">Find Stores</button>
       </form>
+
+      <!-- Display search results -->
       <% if (locals.data) { %>
         <h2>Nearby results:</h2>
-      
         <% if (data.places && data.places.length > 0) { %>
           <ul>
             <% data.places.forEach(place => { %>
@@ -51,9 +53,7 @@
                 <strong><%= place.properties.name || "Unnamed Place" %></strong><br>
                 <%= place.properties.address_line1 %><br>
                 <%= place.properties.address_line2 %><br>
-                <small>
-                  📍 Lat: <%= place.properties.lat %>, Lon: <%= place.properties.lon %>
-                </small>
+                <small>📍 Lat: <%= place.properties.lat %>, Lon: <%= place.properties.lon %></small>
               </li>
             <% }); %>
           </ul>
@@ -61,104 +61,145 @@
           <p>No places found for this category near your location.</p>
         <% } %>
       <% } %>
-      
-
     </div>
 
-    <!-- Right: Map -->
+    <!-- RIGHT SIDE: Map -->
     <div class="map-section">
-      <div id="map" class="map-container">
-        <!-- Map will be rendered here using Leaflet or other API -->
-      </div>
+      <div id="map" class="map-container"></div>
     </div>
   </div>
 
+  <!-- 🌐 JavaScript -->
   <script>
-    const GEOAPIFY_API_KEY = "";
-    const fallbackCoords = { lat: 40.4093, lon: 49.8671 }; // Baku
-  
+    const GEOAPIFY_API_KEY = "<%= apiKey %>";
+    const fallbackCoords = { lat: 40.4093, lon: 49.8671 }; // Default: Baku
+
     const locationInput = document.getElementById("location");
     const useLocationBtn = document.getElementById("useLocationBtn");
     const latInput = document.getElementById("lat");
     const lonInput = document.getElementById("lon");
-  
-    // Initialize Leaflet map
+
+    let selectedCoords = null;
+
+    // 📍 Initialize Leaflet map
     const map = L.map("map");
-  
     L.tileLayer(`https://maps.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}.png?apiKey=${GEOAPIFY_API_KEY}`, {
       attribution:
         '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="https://www.geoapify.com/">Geoapify</a>',
       maxZoom: 20,
     }).addTo(map);
-  
-    // Center map and optionally drop a marker
+
+    // 📌 Helper to center map and optionally place a marker
     function setMapView(lat, lon, withMarker = false) {
       map.setView([lat, lon], 13);
       if (withMarker) {
-        L.marker([lat, lon]).addTo(map).bindPopup("📍 You are here").openPopup();
+        L.marker([lat, lon]).addTo(map).bindPopup("📍 Selected Location").openPopup();
       }
     }
-  
-    // Reverse geocode and update input field
-    async function reverseGeocode(lat, lon) {
-      try {
-        const res = await fetch(
-          `https://api.geoapify.com/v1/geocode/reverse?lat=${lat}&lon=${lon}&apiKey=${GEOAPIFY_API_KEY}`
-        );
-        const data = await res.json();
-  
-        if (data.features.length > 0) {
-          locationInput.value = data.features[0].properties.formatted;
-        } else {
-          alert("Couldn't find address for your location.");
-        }
-      } catch (err) {
-        alert("Error retrieving address from coordinates.");
-        console.error(err);
+
+    // 🔁 Autocomplete suggestions from Geoapify
+    locationInput.addEventListener("input", async () => {
+      const text = locationInput.value;
+      if (text.length < 3) return;
+
+      const res = await fetch(`https://api.geoapify.com/v1/geocode/autocomplete?text=${text}&limit=5&apiKey=${GEOAPIFY_API_KEY}`);
+      const data = await res.json();
+
+      const datalist = document.getElementById("suggestions");
+      datalist.innerHTML = "";
+
+      data.features.forEach(feature => {
+        const opt = document.createElement("option");
+        opt.value = feature.properties.formatted;
+        opt.dataset.lat = feature.properties.lat;
+        opt.dataset.lon = feature.properties.lon;
+        datalist.appendChild(opt);
+      });
+    });
+
+    // 🌍 When user selects a suggestion from list
+    locationInput.addEventListener("change", async () => {
+      const options = document.querySelectorAll("#suggestions option");
+      const match = Array.from(options).find(opt => opt.value === locationInput.value);
+
+      if (match) {
+        const lat = match.dataset.lat;
+        const lon = match.dataset.lon;
+        latInput.value = lat;
+        lonInput.value = lon;
+        selectedCoords = [lat, lon];
+        setMapView(lat, lon, true);
       }
-    }
-  
-    // Handle "Use My Location" button
+    });
+
+    // 📍 Geolocation: Use my location
     useLocationBtn.addEventListener("click", () => {
       if (!navigator.geolocation) {
-        alert("Geolocation is not supported by your browser.");
+        alert("Geolocation not supported.");
         return;
       }
-  
+
       useLocationBtn.textContent = "Getting location...";
-  
+
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
           const { latitude, longitude } = pos.coords;
+          latInput.value = latitude;
+          lonInput.value = longitude;
+          selectedCoords = [latitude, longitude];
           await reverseGeocode(latitude, longitude);
+          setMapView(latitude, longitude, true);
           useLocationBtn.textContent = "📍 Use My Current Location";
         },
         () => {
-          alert("Failed to access your location.");
+          alert("Failed to get location.");
           useLocationBtn.textContent = "📍 Use My Current Location";
         }
       );
     });
-  
-    // Try to center map on user location on load
+
+    // 🔄 Reverse geocode for map or geo lookup
+    async function reverseGeocode(lat, lon) {
+      try {
+        const res = await fetch(`https://api.geoapify.com/v1/geocode/reverse?lat=${lat}&lon=${lon}&apiKey=${GEOAPIFY_API_KEY}`);
+        const data = await res.json();
+        if (data.features.length > 0) {
+          locationInput.value = data.features[0].properties.formatted;
+        }
+      } catch (err) {
+        console.warn("Reverse geocode error:", err.message);
+      }
+    }
+
+    // 🗺️ Click map to select a location
+    map.on("click", async function (e) {
+      const { lat, lng } = e.latlng;
+      latInput.value = lat;
+      lonInput.value = lng;
+      selectedCoords = [lat, lng];
+      await reverseGeocode(lat, lng);
+
+      // Remove existing markers before placing new
+      map.eachLayer(layer => {
+        if (layer instanceof L.Marker) map.removeLayer(layer);
+      });
+      L.marker([lat, lng]).addTo(map).bindPopup("📍 Selected on map").openPopup();
+    });
+
+    // 🧭 On load: attempt to center map using geolocation
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           const { latitude, longitude } = pos.coords;
-          latInput.value = pos.coords.latitude;
-          lonInput.value = pos.coords.longitude;
           setMapView(latitude, longitude, true);
         },
         () => {
-          console.warn("User denied geolocation. Using fallback location.");
           setMapView(fallbackCoords.lat, fallbackCoords.lon);
         }
       );
     } else {
-      console.warn("Geolocation not supported.");
       setMapView(fallbackCoords.lat, fallbackCoords.lon);
     }
   </script>
-  
 </body>
 </html>
