@@ -2,3 +2,4 @@ node_modules/
 3.1+Express+Server/node_modules/
 3.2+Http+Requests/node_modules/
 3.4+Middleware/node_modules/
+.env
